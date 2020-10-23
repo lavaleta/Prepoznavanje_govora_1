@@ -7,15 +7,15 @@ from os.path import dirname, join as pjoin
 
 # C:\Users\lavaleta\Desktop\RAF\Godina 4\Prepoznavanje govora\Data
 
-wav_fname = "Man_sample.wav"
+wav_fname = "Single_tone_sample.wav"
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 WAV_FILE = pjoin(ROOT_DIR, "Data", wav_fname)
 samplerate, data = wavfile.read(WAV_FILE)
 
-p = 10
-q = 300
-dft_window = 0.2
+p = 25
+q = 3000
+dft_window = 0.1
 
 length = data.shape[0] / samplerate
 
@@ -112,28 +112,34 @@ def trim_endpointing(endpointing_data, data):
     return data[first:(len(endpointing_data)-last)]
 
 def dft(data):
-    dft_data = np.abs(scipy.fft.fft(data))
-    return dft_data
+    dft_data = scipy.fft.fft(data)[0:int(len(data)/2)]/len(data)
+    dft_data[1:] = dft_data[1:]*2
+    return np.abs(dft_data)
 
-def plot_dft(dft_data, samplerate,dft_window):
-    freqs = scipy.fft.fftfreq(len(dft_data)) * samplerate
-    # print(freqs.shape)
-    #
-    # fig, ax = plt.subplots()
-    #
-    # ax.stem(freqs, dft_data)
-    # ax.set_xlabel('Frequency in Hertz [Hz]')
-    # ax.set_ylabel('Frequency Domain (Spectrum) Magnitude')
-    # ax.set_xlim(0, samplerate / 2)
-    #
-    # plt.show()
+def plot_dft(dft_data, samplerate,dft_window, data):
+    # freqs = scipy.fft.fftfreq(len(dft_data)) * samplerate
+    # freqs = np.linspace(1000/(len(dft_data)/samplerate), samplerate/2, len(dft_data))
+    freqs = samplerate * np.arange(len(dft_data)) * len(dft_data)
+    print(freqs.shape)
 
-    plt.hist(dft_data, bins=freqs.shape[0])
+    fig, ax = plt.subplots()
+
+    ax.stem(freqs, dft_data)
+    ax.set_xlabel('Frequency in Hertz [Hz]')
+    ax.set_ylabel('Frequency Domain (Spectrum) Magnitude')
+    ax.set_xlim(0, samplerate/2)
+
     plt.show()
+
+def hamming(data):
+    return data * np.hamming(len(data))
+
+def hanning(data):
+    return data * np.hamming(len(data))
 
 plot_amp(data, length)
 
-average_noise = calc_average_noise(data[500:],length,samplerate)
+average_noise = calc_average_noise(data[4410:],length,samplerate)
 
 endpointing_data = endpointing(data, average_noise)
 
@@ -149,5 +155,5 @@ print("Data length after trim = ", len(data))
 
 dft_data = dft(data[:int(samplerate*dft_window)])
 
-plot_dft(dft_data, samplerate, dft_window)
+plot_dft(hamming(dft_data), samplerate, dft_window, data)
 
