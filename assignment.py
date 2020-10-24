@@ -6,31 +6,40 @@ import os
 from os.path import dirname, join as pjoin
 
 # C:\Users\lavaleta\Desktop\RAF\Godina 4\Prepoznavanje govora\Data
+global_data = 0
+global_samplerate = 0
 
-wav_fname = "Single_tone_sample.wav"
+def init_variables(wav_fname, p, q, dft_window):
+    wav_fname+=".wav"
+    ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+    WAV_FILE = pjoin(ROOT_DIR, "Data", wav_fname)
+    samplerate, data = wavfile.read(WAV_FILE)
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-WAV_FILE = pjoin(ROOT_DIR, "Data", wav_fname)
-samplerate, data = wavfile.read(WAV_FILE)
+    length = data.shape[0] / samplerate
 
-p = 25
-q = 3000
-dft_window = 0.1
+    print("sample rate =", samplerate)
+    print(f"length =", round(length, 2), "s")
 
-length = data.shape[0] / samplerate
+    average_noise = calc_average_noise(data[int(samplerate/100):], length, samplerate)
 
-samplerate, data = wavfile.read(WAV_FILE)
+    endpointing_data = endpointing(data, average_noise)
 
-print("sample rate =", samplerate)
-print(f"length =",round(length, 2),"s")
+    endpointing_data = flatten_down(flatten_up(endpointing_data, p), q)
 
-def plot_amp(data, length):
-    time = np.linspace(0., length, data.shape[0])
-    plt.plot(time, data[:], label="Mono sound")
-    plt.legend()
-    plt.xlabel("Time [s]")
-    plt.ylabel("Amplitude")
-    plt.show()
+    print("average_noise =", round(average_noise, 3))
+
+    print("Data length before trim =", len(data))
+
+    after_endpointing = trim_endpointing(endpointing_data, data)
+
+    print("Data length after trim = ", len(after_endpointing))
+
+    global global_data
+    global_data = after_endpointing
+    global global_samplerate
+    global_samplerate = samplerate
+
+    return [data, length], round(average_noise, 3), len(data), len(after_endpointing), samplerate, round(length, 2)
 
 def calc_average_noise(data, length, samplerate):
     if(length < 0.1):
@@ -116,44 +125,37 @@ def dft(data):
     dft_data[1:] = dft_data[1:]*2
     return np.abs(dft_data)
 
-def plot_dft(dft_data, samplerate,dft_window, data):
-    # freqs = scipy.fft.fftfreq(len(dft_data)) * samplerate
-    # freqs = np.linspace(1000/(len(dft_data)/samplerate), samplerate/2, len(dft_data))
-    freqs = samplerate * np.arange(len(dft_data)) * len(dft_data)
-    print(freqs.shape)
-
-    fig, ax = plt.subplots()
-
-    ax.stem(freqs, dft_data)
-    ax.set_xlabel('Frequency in Hertz [Hz]')
-    ax.set_ylabel('Frequency Domain (Spectrum) Magnitude')
-    ax.set_xlim(0, samplerate/2)
-
-    plt.show()
-
 def hamming(data):
     return data * np.hamming(len(data))
 
 def hanning(data):
-    return data * np.hamming(len(data))
+    return data * np.hanning(len(data))
 
-plot_amp(data, length)
-
-average_noise = calc_average_noise(data[4410:],length,samplerate)
-
-endpointing_data = endpointing(data, average_noise)
-
-endpointing_data = flatten_down(flatten_up(endpointing_data, p), q)
-
-print("average_noise =", round(average_noise,3))
-
-print("Data length before trim =", len(data))
-
-data = trim_endpointing(endpointing_data, data)
-
-print("Data length after trim = ", len(data))
-
-dft_data = dft(data[:int(samplerate*dft_window)])
-
-plot_dft(hamming(dft_data), samplerate, dft_window, data)
-
+# def plot_dft(dft_data, samplerate):
+#     freqs = scipy.fft.fftfreq(len(dft_data)) * samplerate
+#
+#     fig, ax = plt.subplots()
+#
+#     ax.stem(freqs, dft_data)
+#     ax.set_xlabel('Frequency in Hertz [Hz]')
+#     ax.set_ylabel('Frequency Domain (Spectrum) Magnitude')
+#     ax.set_xlim(0, samplerate/2)
+#
+#     plt.show()
+#
+# def plot_spectrogram(data, samplerate):
+#
+#     plt.title('Spectrogram')
+#     plt.specgram(data, Fs=samplerate)
+#     plt.xlabel('Time')
+#     plt.ylabel('Frequency')
+#     plt.show()
+#
+# def plot_amp(data, length):
+#     time = np.linspace(0., length, data.shape[0])
+#     plt.plot(time, data[:], label="Mono sound")
+#     plt.legend()
+#     plt.xlabel("Time [s]")
+#     plt.ylabel("Amplitude")
+#     # plt.show()
+#     return [data, length]
