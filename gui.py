@@ -22,35 +22,34 @@ class Application(tk.Frame):
 
         txt0 = tk.Text(self, height=1, width=20)
         txt0.insert(tk.END, "Man_sample")
-        self.hi_there = txt0
-        self.hi_there.grid(column=0, row=0, padx=10, pady=5)
+        self.txt0 = txt0
+        self.txt0.grid(column=0, row=0, padx=10, pady=5)
 
         self.hi_there = tk.Label(self,height = 1, width = 16, text ="p (flatten up)")
         self.hi_there.grid(column=1, row=1,padx=10, pady=5)
 
         txt1 = tk.Text(self, height=1, width=20)
         txt1.insert(tk.END, "50")
-        self.hi_there = txt1
-        self.hi_there.grid(column=0, row=1,padx=10, pady=5)
+        self.txt1 = txt1
+        self.txt1.grid(column=0, row=1,padx=10, pady=5)
 
         self.hi_there = tk.Label(self, height=1, width=16, text="q (flatten down)")
         self.hi_there.grid(column=1, row=2,padx=10, pady=5)
 
-        str1 = tk.StringVar()
-        txt2 = tk.Text(self, height=1, width=20, variable=str1)
+        txt2 = tk.Text(self, height=1, width=20)
         txt2.insert(tk.END, "500")
-        self.hi_there = txt2
-        self.hi_there.grid(column=0, row=2,padx=10, pady=5)
+        self.txt2 = txt2
+        self.txt2.grid(column=0, row=2,padx=10, pady=5)
 
         self.hi_there = tk.Label(self,height = 1, width = 16, text ="window (ms)")
         self.hi_there.grid(column=1, row=3, padx=10, pady=5)
 
         txt3 = tk.Text(self, height=1, width=20)
         txt3.insert(tk.END, "0.2-0.4")
-        self.hi_there = txt3
-        self.hi_there.grid(column=0, row=3,padx=10, pady=5)
+        self.txt3 = txt3
+        self.txt3.grid(column=0, row=3,padx=10, pady=5)
 
-        self.hi_there = tk.Button(self, height=1, width=16, text="Enter data", command= lambda wav=txt0.get("1.0","end-1c"), p=txt1.get("1.0","end-1c"), q=txt2.get("1.0","end-1c"), win=txt3.get("1.0","end-1c"): self.enter_data(wav, p, q, win))
+        self.hi_there = tk.Button(self, height=1, width=16, text="Enter data", command= lambda: self.enter_data())
         self.hi_there.grid(column=1, row=4, padx=10, pady=5)
 
         v = tk.IntVar()
@@ -74,19 +73,25 @@ class Application(tk.Frame):
         self.hi_there = tk.Label(self, height=1, width=16, text="window function")
         self.hi_there.grid(column=1, row=6, padx=10, pady=5)
 
-        self.hi_there = tk.Button(self, height=1, width=16, text="Histogram", command= lambda win=txt3.get("1.0","end-1c") : self.plot_hist(v.get(), win))
+        self.hi_there = tk.Button(self, height=1, width=16, text="Histogram", command= lambda: self.plot_hist(v.get()))
         self.hi_there.grid(column=0, row=8, padx=10, pady=5)
 
         self.hi_there = tk.Button(self, height=1, width=16, text="Spectrogram", command= lambda: self.plot_spec())
         self.hi_there.grid(column=1, row=8, padx=10, pady=5)
 
-    def enter_data(self, wav, p, q, win):
+    def enter_data(self):
         global load
         load = True
 
-        print("sta je ovo", wav, p, q, win)
+        wav = self.txt0.get("1.0","end-1c")
 
-        print(wav, p, q, win)
+        p = self.txt1.get("1.0","end-1c")
+
+        q = self.txt2.get("1.0","end-1c")
+
+        win = self.txt3.get("1.0","end-1c")
+
+        print(wav, p , q, win)
 
         plt, av_noise, data_len_b, data_len_a, samplerate, len = assign.init_variables(wav, int(p), int(q), win)
 
@@ -107,11 +112,13 @@ class Application(tk.Frame):
         toolbar.update()
         canvas.get_tk_widget().pack()
 
-    def plot_hist(self, selected, window):
+    def plot_hist(self, selected):
         global load
         if load != True:
             tk.messagebox.showwarning(title="Warning!", message="No data loaded.")
             return
+
+        window = self.txt3.get("1.0","end-1c")
 
         window = window.split("-")
         data = ""
@@ -143,8 +150,12 @@ class Application(tk.Frame):
         return
 
     def plot_spec(self):
+        global load
+        if load != True:
+            tk.messagebox.showwarning(title="Warning!", message="No data loaded.")
+            return
 
-        assign.plot_spectrogram(assign.global_data, assign.global_samplerate)
+        # assign.plot_spectrogram(assign.global_data, assign.global_samplerate)
 
         fig = Figure(figsize=(5, 5), dpi=100)
         plot1 = fig.add_subplot(111)

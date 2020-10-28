@@ -45,6 +45,7 @@ def calc_average_noise(data, length, samplerate):
     if(length < 0.1):
         return print("Error")
     sample_len = int(samplerate/10)
+    print(sample_len)
     return np.mean(data[:sample_len]) + 2*np.std(data[:sample_len])
 
 def endpointing(data, average_noise):
