@@ -90,22 +90,17 @@ def flatten_up(data, window):
     return data
 
 def flatten_down(data, window):
-    bull = True
     signal_len = 0
 
     for i in range(len(data)):
-        if bull == True:
-            if data[i] == 1:
-                signal_len = 1
-                bull = False
+
+        if data[i] == 1:
+            signal_len += 1
         else:
-            if data[i] == 1:
-                signal_len += 1
-            else:
-                if signal_len < window:
-                    for j in range(signal_len):
-                        data[i-j-1] = 0
-                bull = True
+            if signal_len < window:
+                for j in range(signal_len):
+                    data[i-j-1] = 0
+            signal_len = 0
     return data
 
 def trim_endpointing(endpointing_data, data):
