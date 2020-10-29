@@ -30,6 +30,14 @@ def init_variables(wav_fname, p, q, dft_window):
 
     print("Data length before trim =", len(data))
 
+    # one = 0
+    # zero = 0
+    for i in range(len(data)):
+        if(endpointing_data[i] == 1):
+            print(i, data[i])
+        # else:
+        #     print(i, data[i])
+
     after_endpointing = trim_endpointing(endpointing_data, data)
 
     print("Data length after trim = ", len(after_endpointing))
@@ -76,32 +84,28 @@ def flatten_up(data, window):
                 noise_len += 1
             else:
                 if noise_len < window:
-                    tmp_index = i
                     for j in range(noise_len):
-                        tmp_index -= 1
-                        data[tmp_index] = 1
+                        data[i-j] = 1
                 state = "SIGNAL"
     return data
 
 def flatten_down(data, window):
-    state = "NOISE"
+    bull = True
     signal_len = 0
 
     for i in range(len(data)):
-        if state == "NOISE":
-            if data[i] != 0:
-                state = "MAYBE_SIGNAL"
+        if bull == True:
+            if data[i] == 1:
                 signal_len = 1
-        elif state == "MAYBE_SIGNAL":
+                bull = False
+        else:
             if data[i] == 1:
                 signal_len += 1
             else:
                 if signal_len < window:
-                    tmp_index = i
                     for j in range(signal_len):
-                        tmp_index -= 1
-                        data[tmp_index] = 0
-                state = "NOISE"
+                        data[i-j-1] = 0
+                bull = True
     return data
 
 def trim_endpointing(endpointing_data, data):

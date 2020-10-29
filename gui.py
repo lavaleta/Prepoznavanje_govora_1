@@ -29,7 +29,7 @@ class Application(tk.Frame):
         self.hi_there.grid(column=1, row=1,padx=10, pady=5)
 
         txt1 = tk.Text(self, height=1, width=20)
-        txt1.insert(tk.END, "50")
+        txt1.insert(tk.END, "10")
         self.txt1 = txt1
         self.txt1.grid(column=0, row=1,padx=10, pady=5)
 
@@ -37,7 +37,7 @@ class Application(tk.Frame):
         self.hi_there.grid(column=1, row=2,padx=10, pady=5)
 
         txt2 = tk.Text(self, height=1, width=20)
-        txt2.insert(tk.END, "500")
+        txt2.insert(tk.END, "150")
         self.txt2 = txt2
         self.txt2.grid(column=0, row=2,padx=10, pady=5)
 
